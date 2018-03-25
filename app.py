@@ -179,7 +179,7 @@ class GifSearchForm(FlaskForm):
 
 class CollectionCreateForm(FlaskForm):
     name = StringField('Collection Name',validators=[Required()])
-    gif_picks = SelectMultipleField('GIFs to include', coerce=int) ###ASK ABOUT COERCE INT AGAIN
+    gif_picks = SelectMultipleField('GIFs to include') 
     submit = SubmitField("Create Collection")
 
 ########################
@@ -244,7 +244,6 @@ def get_or_create_collection(name, current_user, gif_list=[]):
     """Always returns a PersonalGifCollection instance"""
     # TODO 364: This function should get or create a personal gif collection. Uniqueness of the gif collection should be determined by the name of the collection and the id of the logged in user.
     personal = PersonalGifCollection.query.filter_by(name = name, user_id = current_user).first()
-    print(current_user)
     if personal:
         return personal
     else:
@@ -330,6 +329,7 @@ def index():
 def search_results(search_term):
     term = SearchTerm.query.filter_by(term=search_term).first()
     relevant_gifs = term.gifs.all()
+    print([type(x) for x in relevant_gifs])
     return render_template('searched_gifs.html',gifs=relevant_gifs,term=term)
 
 @app.route('/search_terms')
@@ -352,7 +352,7 @@ def all_gifs():
 def create_collection():
     form = CollectionCreateForm()
     gifs = Gif.query.all()
-    choices = [(g.id, g.title) for g in gifs]
+    choices = [(str(g.id), g.title) for g in gifs]
     form.gif_picks.choices = choices
     # TODO 364: If the form validates on submit, get the list of the gif ids that were selected from the form. Use the get_gif_by_id function to create a list of Gif objects.  Then, use the information available to you at this point in the function (e.g. the list of gif objects, the current_user) to invoke the get_or_create_collection function, and redirect to the page that shows a list of all your collections.
     if form.validate_on_submit():
